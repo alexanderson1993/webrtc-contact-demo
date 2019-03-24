@@ -1,7 +1,32 @@
 .App {
   text-align: center;
 }
+html,
+body,
+#root {
+  height: 100vh;
+}
+.ship-container {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  border: solid 1px white;
+  position: relative;
+}
+.smol-contact {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background-color: red;
+}
 
+#outgoing {
+  width: 600px;
+  word-wrap: break-word;
+}
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
   height: 40vmin;
