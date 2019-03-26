@@ -17,7 +17,7 @@ module.exports = class Contact {
       y: 0,
       z: 0
     };
-    this.maxVelocity = 1;
+    this.maxVelocity = 3;
     this.acceleration = 0.1;
   }
 };

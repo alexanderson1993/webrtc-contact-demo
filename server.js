@@ -1,56 +1,51 @@
-const express = require("express");
 var Peer = require("simple-peer");
 var wrtc = require("wrtc");
-var cors = require("cors");
 const WebSocket = require("ws");
-const port = 3001;
+const uuid = require("uuid");
 const Game = require("./game");
+const msgpack = require("@ygoe/msgpack");
 
 const game = new Game();
+game.addContact();
+game.addContact();
+game.start();
 
+const peers = {};
+game.setCallback(game => {
+  Object.values(peers)
+    .filter(Boolean)
+    .forEach(p => p.send(msgpack.serialize(game.contacts)));
+});
 const wss = new WebSocket.Server({ port: 8080 });
 
 wss.on("connection", function connection(ws) {
+  const id = uuid.v4();
+  console.log("Made connection", id);
   var peer1 = new Peer({ initiator: true, wrtc: wrtc });
-  var signal = null;
-  var interval = null;
   peer1.on("signal", function(data) {
-    // when peer1 has signaling data, give it to peer2 somehow
-    if (!signal) signal = data;
     ws.send(JSON.stringify(data));
   });
   ws.on("message", function incoming(message) {
-    console.log(message);
     peer1.signal(JSON.parse(message));
   });
 
-  ws.send(signal);
-
   ws.on("close", () => {
-    game.stop();
-    clearInterval(interval);
-    peer1.destroy();
+    if (!peers[id]) return;
+    peers[id].destroy();
+    peers[id] = null;
     peer1 = null;
   });
   peer1.on("connect", function() {
-    console.log("CONNECT");
-    game.addContact();
-    game.addContact();
-    game.start();
-    game.setCallback(game => {
-      peer1.send(JSON.stringify(game.contacts));
-    });
+    peers[id] = peer1;
   });
   peer1.on("data", function(data) {
     if (data.toString() === "addContact") {
       game.addContact();
     }
   });
+  peer1.on("error", function(error) {
+    console.error(error);
+  });
 });
 
-const app = express();
-app.use(cors());
-
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+console.log("Started");
