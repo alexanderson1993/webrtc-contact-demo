@@ -4,7 +4,7 @@ import WrtcPeer from "./wrtcClient";
 
 const actions = [];
 const peer = new WrtcPeer({
-  url: "ws://localhost:8080",
+  url: `ws://${window.location.hostname}:8080`,
   onData: data => actions.forEach(a => a(data))
 });
 
